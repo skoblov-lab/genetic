@@ -10,15 +10,6 @@ from genetic import individuals, recombination, selection, populations
 #TODO test recombination and selection
 
 
-def trains(errors):
-    """
-    Check whether training reduces the error rate
-    """
-    test = scipy.stats.spearmanr(np.array(list(enumerate(errors))))
-    return (test.correlation < 0) and (test.pvalue < 0.5)
-
-
-
 class TestSingleChromosomeIndividual(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,7 +47,7 @@ class TestPanmicticPopulation(unittest.TestCase):
         self.engine = lambda x: random.randint(0, 50)
         self.fitness = lambda x: - abs(200 - sum(x.genome))
         self.size = 100
-        self.indiv = individuals.SingleChromosomeIndividual(self.engine, 0.1, 9)
+        self.indiv = individuals.SingleChromosomeIndividual(self.engine, 0.1, 50)
         self.select = selection.bimodal(0.2, 0.05)
         self.nlegends = 10
 
@@ -65,6 +56,43 @@ class TestPanmicticPopulation(unittest.TestCase):
         pop = populations.PanmicticPopulation(ancestors, self.size,
                                               self.fitness, self.select,
                                               self.nlegends)
+        errors1 = list(map(abs, pop.evolve(5, jobs=1)))
+        errors2 = list(map(abs, pop.evolve(100, jobs=1)))
+
+        self.assertTrue(np.mean(errors2) < np.mean(errors1))
+
+    def test_two_threads(self):
+        ancestors = [self.indiv] * 2
+        pop = populations.PanmicticPopulation(ancestors, self.size,
+                                              self.fitness, self.select,
+                                              self.nlegends)
+        errors1 = list(map(abs, pop.evolve(5, jobs=1)))
+        errors2 = list(map(abs, pop.evolve(100, jobs=1)))
+        self.assertTrue(np.mean(errors2) < np.mean(errors1))
+
+    def test_legends(self):
+        ancestors = [self.indiv] * 2
+        with self.assertRaises(ValueError):
+            populations.PanmicticPopulation(ancestors, self.size,
+                                            self.fitness, self.select,
+                                            -10)
+        with self.assertRaises(ValueError):
+            populations.PanmicticPopulation(ancestors, self.size,
+                                            self.fitness, self.select,
+                                            0.1)
+
+        pop = populations.PanmicticPopulation(ancestors, self.size,
+                                              self.fitness, self.select,
+                                              self.nlegends)
+        errors1 = list(map(abs, pop.evolve(1, jobs=1)))
+        legends1 = pop.legends
+        errors2 = list(map(abs, pop.evolve(49, jobs=1)))
+        legends2 = pop.legends
+
+        legendary_scores1 = [abs(legend[0]) for legend in legends1]
+        legendary_scores2 = [abs(legend[0]) for legend in legends2]
+
+        self.assertTrue(np.mean(legendary_scores2) < np.mean(legendary_scores1))
 
 
 if __name__ == "__main__":

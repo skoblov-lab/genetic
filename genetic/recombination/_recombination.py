@@ -13,8 +13,7 @@ def binomial(chr1, chr2):
     if len(chr1) != len(chr2):
         raise ValueError("Incompatible chromosome lengths")
     choice_mask = np.random.binomial(1, 0.5, len(chr1))
-    recombination = [a if ch else b for (ch, a, b) in zip(choice_mask, chr1, chr2)]
-    return recombination
+    return [a if ch else b for (ch, a, b) in zip(choice_mask, chr1, chr2)]
 
 
 def breakpoint(chr1, chr2, rate):
