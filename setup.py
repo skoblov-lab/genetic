@@ -7,13 +7,13 @@ from setuptools import setup
 
 
 setup(
-    name='basicnnets',
+    name='genetic',
     version='0.1.dev1',
 
-    description=("Different Neural Network designs implemented on top of "
-                 "lasagne and Theano. Refer to README for installation details"),
+    description=("A versatile distributable genetic algorithm build with"
+                 "flexibility and ease of use in mind"),
 
-    url="https://github.com/grayfall/basicnnets.git",
+    url="https://github.com/grayfall/genetic.git",
 
     # Author details
     author="Ilia Korvigo",
@@ -33,17 +33,12 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords=("basic artificial neural network classes, dense, convolutional "
-              "and recurrent networks"),
+    keywords=("genetic algorithm, multiprocessing, numerical optimisation,"
+              "stochastic optimisation"),
 
-    packages=["nnet"],
-
-    # Alternatively, if you want to distribute just a my_module.py, uncomment
-    # this:
-    #   py_modules=["my_module"],
+    packages=["genetic"],
 
     install_requires=["numpy>=1.11.0",
                       "scipy>=0.17.0",
                       "multiprocess>=0.70.4"],
-
 )
