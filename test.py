@@ -66,8 +66,8 @@ class TestPanmicticPopulation(unittest.TestCase):
         pop = populations.PanmicticPopulation(ancestors, self.size,
                                               self.fitness, self.select,
                                               self.nlegends)
-        errors1 = list(map(abs, pop.evolve(5, jobs=1)))
-        errors2 = list(map(abs, pop.evolve(100, jobs=1)))
+        errors1 = list(map(abs, pop.evolve(5, jobs=2)))
+        errors2 = list(map(abs, pop.evolve(100, jobs=2)))
         self.assertTrue(np.mean(errors2) < np.mean(errors1))
 
     def test_legends(self):

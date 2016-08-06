@@ -10,7 +10,7 @@ setup(
     name='genetic',
     version='0.1.dev2',
 
-    description=("A versatile distributable genetic algorithm build with"
+    description=("A versatile distributable genetic algorithm build with "
                  "flexibility and ease of use in mind"),
 
     url="https://github.com/grayfall/genetic.git",

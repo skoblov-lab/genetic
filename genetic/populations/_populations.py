@@ -151,16 +151,10 @@ class PanmicticPopulation(BasePopulation):
             :type evaluated_individuals: list[(Any, BaseIndividual)]
             :rtype: list[(Any, BaseIndividual)]
             """
-            def mate(indiv1, indiv2):
-                """
-                :type indiv1: (Any, BaseIndividual)
-                :type indiv2: (Any, BaseIndividual)
-                """
-                return indiv1[1].mate(indiv2[1])
 
             n_pairs = self.size - len(evaluated_individuals)
             pairs = [sample(self.individuals, 2) for _ in range(n_pairs)]
-            new_individuals = workers.starmap(mate, pairs)
+            new_individuals = [ind1[1].mate(ind2[1]) for ind1, ind2 in pairs]
             scores = workers.map(self.fitness_func, new_individuals)
             return evaluated_individuals + list(zip(scores, new_individuals))
 
