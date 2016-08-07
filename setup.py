@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='genetic',
-    version='0.1.dev2',
+    version='0.1.dev3',
 
     description=("A versatile distributable genetic algorithm build with "
                  "flexibility and ease of use in mind"),

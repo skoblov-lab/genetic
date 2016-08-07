@@ -2,7 +2,7 @@ from ._util import *
 
 
 __license__ = "MIT"
-__version__ = "0.1.dev2"
+__version__ = "0.1.dev3"
 __author__ = "Ilia Korvigo"
 __maintainer__ = "Ilia Korvigo"
 __email__ = "ilia.korvigo@gmail.com"
