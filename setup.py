@@ -3,7 +3,7 @@ Setup module
 """
 
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
@@ -36,7 +36,7 @@ setup(
     keywords=("genetic algorithm, multiprocessing, numerical optimisation,"
               "stochastic optimisation"),
 
-    packages=["genetic"],
+    packages=find_packages("./"),
 
     install_requires=["numpy>=1.11.0",
                       "scipy>=0.17.0",

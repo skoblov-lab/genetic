@@ -2,7 +2,6 @@ import unittest
 import random
 
 import numpy as np
-import scipy.stats
 
 from genetic import individuals, recombination, selection, populations
 
