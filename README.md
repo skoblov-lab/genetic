@@ -4,8 +4,8 @@ _(ver. 0.1.dev2)_
 
 
 This package is intended for numerical optimisation. The main goals are
-flexibility and ease of use. A while ago I needed a genetic algorithms that
-would allow to absolutely arbitrary combinations of objects (parameters) in the
+flexibility and ease of use. A while ago I needed a genetic algorithm that
+would allow arbitrary combinations of objects (parameters) in the
 genome. The lack of such implementation in Python (or my failure to find one)
 pushed me towards developing this package. As of now it contains 4 main modules
 
@@ -30,7 +30,7 @@ ___
 
 
 
-First let's create an individual. To do that we need an engine  that will
+First, let's create an individual. To do that we need an engine that will
 generate gene values
 
 ```
@@ -41,12 +41,12 @@ generate gene values
 
 ```
 
-Note that the engine need to have a single parameter. That is because in some
+Note that the engine must have a single argument. That is because in some
 cases one may want to generate a new value based on the current state of the
 genome. We will generate the values totally randomly.
 
 
-Let's create the first individual. Let is have 10 genes. We can provide unique
+Let's create the first individual. Let it have 10 genes. We can provide unique
 engine for each gene, but in this case all genes will have the same engine.
 And let's set the random mutation rate to `0.1`.
 
@@ -58,7 +58,7 @@ And let's set the random mutation rate to `0.1`.
 
 ```
 
-Here we have out first individual.
+Here we have our first individual.
 
 Now, let's move on to the population. We will need to create the target (fitness)
 function to maximise.
@@ -73,7 +73,7 @@ function to maximise.
 
 ```
 
-So this function takes a `SingleChromosomeIndividual` instance and evaluates
+This function takes a `SingleChromosomeIndividual` instance and evaluates
 the negative of the absolute difference between `200` and the sum of genes
 (numbers in this case).
 
@@ -111,7 +111,7 @@ Now, let's make it evolve for 10 generations
 
 ```
 
-Note that the `PanmicticPopulation.evolve` method returns a lazy generator, so
+Note that the `PanmicticPopulation.evolve` method returns a lazy generator, hence
 to make the evolution happen, you need to make it generate values (to iterate
 over it). Our errors are:
 
@@ -130,7 +130,6 @@ over it). Our errors are:
  -28.5,
  -33.960000000000001]
 
-
 ```
 
 Let's look at the legends' scores
@@ -141,12 +140,10 @@ Let's look at the legends' scores
 
 [0, 0, 0, -1, -1, -1, -1, -1, -1, -1]
 
-
 ```
 
 As you see, we already have 3 optimal solutions. Let's take a look at the first
 one
-
 
 ```
 
