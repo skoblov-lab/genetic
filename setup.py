@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='genetic',
-    version='0.1.dev3',
+    version='0.2.dev1',
 
     description=("A versatile distributable genetic algorithm build with "
                  "flexibility and ease of use in mind"),
@@ -27,9 +27,9 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Scientific/Engineering ",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
 
     # What does your project relate to?
@@ -38,7 +38,8 @@ setup(
 
     packages=find_packages("./"),
 
-    install_requires=["numpy>=1.11.0",
-                      "scipy>=0.17.0",
-                      "multiprocess>=0.70.4"],
+    install_requires=[
+        "numpy>=1.11.0",
+        "scipy>=0.17.0",
+    ],
 )
