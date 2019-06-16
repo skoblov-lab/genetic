@@ -2,7 +2,7 @@ import abc
 from itertools import chain
 from functools import reduce
 from typing import Callable, Collection, Generic, List, NamedTuple, \
-    Optional, Tuple, TypeVar, Iterable
+    Optional, Tuple, TypeVar, Iterable, Sized
 
 KeyType = TypeVar('KeyType')
 ValType = TypeVar('ValType', covariant=True)
@@ -48,7 +48,7 @@ class Ord(metaclass=abc.ABCMeta):
         return compatible or NotImplemented
 
 
-class Index(Generic[KeyType, ValType], metaclass=abc.ABCMeta):
+class Index(Generic[KeyType, ValType], Sized, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __getitem__(self, item: KeyType) -> ValType:

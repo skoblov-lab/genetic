@@ -41,6 +41,7 @@ setup(
     install_requires=[
         'numpy>=1.15.4',
         'joblib>=0.13.2',
-        'tqdm>=4.31.1'
+        'tqdm>=4.31.1',
+        'fn'
     ],
 )
