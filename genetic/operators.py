@@ -10,7 +10,7 @@ from typing import Callable, Collection, Dict, Generic, List, Optional, Tuple, \
 import numpy as np  # type: ignore
 from tqdm import tqdm  # type: ignore
 
-from genetic.base import ChildMutator, Crossover, Estimator, Executor, \
+from genetic.base import Mutator, Crossover, Estimator, Executor, \
     KeyType, MateSelector, Ord, Recorder, SelectionPolicy
 from genetic.utils import replace
 
@@ -23,7 +23,7 @@ __all__ = (
     'GenericRecorder',
     'GenericSelector',
     'GenericCrossover',
-    'GenericChildMutator',
+    'GenericMutator',
     'GenericPolicy',
     'ktournament'
 )
@@ -402,7 +402,7 @@ class GenericCrossover(Generic[Individual], Crossover):
         return list(chain.from_iterable(child_groups))
 
 
-class GenericChildMutator(Generic[Individual], ChildMutator):
+class GenericMutator(Generic[Individual], Mutator):
 
     def __init__(self, mutator: Callable[[Individual], Individual]):
         if not callable(mutator):

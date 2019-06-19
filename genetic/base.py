@@ -2,7 +2,7 @@ import abc
 from itertools import chain
 from functools import reduce
 from typing import Callable, Collection, Generic, List, NamedTuple, \
-    Optional, Tuple, TypeVar, Iterable, Sized
+    Optional, Tuple, TypeVar, Iterable, Sized, Container
 
 KeyType = TypeVar('KeyType')
 ValType = TypeVar('ValType', covariant=True)
@@ -11,6 +11,10 @@ Record = TypeVar('Record', covariant=True)
 
 
 class Ord(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing an orderable object, i.e. any object
+    that satisfies the order axioms.
+    """
 
     @abc.abstractmethod
     def __eq__(self, other):
@@ -49,6 +53,11 @@ class Ord(metaclass=abc.ABCMeta):
 
 
 class Index(Generic[KeyType, ValType], Sized, metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing a finite set of objects of type ValType
+    that can be accessed by an index/key of type KeyType. Examples include
+    builtin arrays, lists, tuples and dicts.
+    """
 
     @abc.abstractmethod
     def __getitem__(self, item: KeyType) -> ValType:
@@ -56,7 +65,7 @@ class Index(Generic[KeyType, ValType], Sized, metaclass=abc.ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        required = ['__getitem__', '__contains__', '__len__']
+        required = ['__getitem__', '__len__']
         compatible = (
                 cls is Index and
                 all(attr in subclass.__dict__ for attr in required)
@@ -65,6 +74,10 @@ class Index(Generic[KeyType, ValType], Sized, metaclass=abc.ABCMeta):
 
 
 class Executor(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing the executor API. An executor is any
+    object that implements the `map` function.
+    """
 
     @abc.abstractmethod
     def map(self,
@@ -79,6 +92,11 @@ class Executor(metaclass=abc.ABCMeta):
 
 
 class Estimator(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing an abstract fitness estimator. The most
+    basic estimator is simply a function, but it can be any Callable object with
+    a compatible call signature.
+    """
 
     @abc.abstractmethod
     def __call__(self,
@@ -88,12 +106,24 @@ class Estimator(metaclass=abc.ABCMeta):
 
 
 class Recorder(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing a record keeper. Recorders are
+    responsible for starting and updating metadata records (e.g. fitness,
+    age, etc.) associated with individuals.
+    """
 
     @abc.abstractmethod
     def start(self,
               individuals: Index[KeyType, Individual],
               scores: Index[KeyType, Ord],
               **kwargs) -> Index[KeyType, Record]:
+        """
+        Start records
+        :param individuals:
+        :param scores:
+        :param kwargs:
+        :return:
+        """
         pass
 
     @abc.abstractmethod
@@ -104,6 +134,7 @@ class Recorder(metaclass=abc.ABCMeta):
                broodsize: int,
                **kwargs) -> Index[KeyType, Record]:
         """
+        Update records
         :param individuals: all individuals at the start of a generation, i.e.
         all individuals that might've mated
         :param records: records associated with `individuals`
@@ -117,13 +148,16 @@ class Recorder(metaclass=abc.ABCMeta):
 
 class MateSelector(metaclass=abc.ABCMeta):
 
-    # TODO does it make sense to explicitly show how many mates are selected
+    """
+    An abstract base class representing the a parent selection operator.
+    """
 
     @property
     @abc.abstractmethod
     def nmates(self) -> int:
         """
-        How many individuals form a mating group?
+        How many individuals form a mating group? This is required to check
+        compatibility with a crossover operator
         :return:
         """
         pass
@@ -138,12 +172,16 @@ class MateSelector(metaclass=abc.ABCMeta):
 
 
 class Crossover(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing a crossover operator
+    """
 
     @property
     @abc.abstractmethod
     def nmates(self) -> int:
         """
-        How many individuals form a crossover group?
+        How many individuals form a crossover group? It's required to check
+        compatibility with a parent selection operator
         :return:
         """
         pass
@@ -151,6 +189,11 @@ class Crossover(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def broodsize(self) -> int:
+        """
+        How many offsprings are produced by the crossover operation. It's
+        required to calculate the number of mating groups to select.
+        :return:
+        """
         pass
 
     @abc.abstractmethod
@@ -162,7 +205,10 @@ class Crossover(metaclass=abc.ABCMeta):
         pass
 
 
-class ChildMutator(metaclass=abc.ABCMeta):
+class Mutator(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing a mutation operator
+    """
 
     @abc.abstractmethod
     def __call__(self,
@@ -172,6 +218,9 @@ class ChildMutator(metaclass=abc.ABCMeta):
 
 
 class SelectionPolicy(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing a population selection operator
+    """
 
     @abc.abstractmethod
     def __call__(self,
@@ -194,13 +243,16 @@ Operators = NamedTuple('Operators', [
     ('estimator', Estimator),
     ('selector', MateSelector),
     ('crossover', Crossover),
-    ('mutator', ChildMutator),
+    ('mutator', Mutator),
     ('join', Join),
     ('policy', SelectionPolicy),
 ])
 
 
 class Callback(metaclass=abc.ABCMeta):
+    """
+    An abstract base class representing a callback operation.
+    """
 
     @abc.abstractmethod
     def __call__(
@@ -213,6 +265,10 @@ class Callback(metaclass=abc.ABCMeta):
 
 
 class BaseEvolver(metaclass=abc.ABCMeta):
+    """
+    An base Evolver class. It is responsible for orchestrating the evolution
+    process and calling callbacks along the way
+    """
 
     @abc.abstractmethod
     def evolve_generation(

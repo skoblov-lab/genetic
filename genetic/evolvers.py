@@ -49,7 +49,7 @@ class GenericEvolver(BaseEvolver):
     ...    mask = np.random.binomial(1, 0.0, indiv.shape).astype(bool)
     ...    return np.where(mask, ~indiv, indiv)
     ...
-    >>> mutator = GenericChildMutator(mutate)
+    >>> mutator = GenericMutator(mutate)
     >>> # create a selection policy
     >>> policy = GenericPolicy(
     ...     F(ktournament, 25, lambda x: x.score, reverse=True)
