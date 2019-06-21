@@ -11,7 +11,7 @@ import numpy as np  # type: ignore
 from tqdm import tqdm  # type: ignore
 
 from genetic.base import Mutator, Crossover, Estimator, Executor, \
-    KeyType, MateSelector, Ord, Recorder, SelectionPolicy
+    KeyT, MateSelector, Ord, Recorder, SelectionPolicy
 from genetic.utils import replace
 
 
@@ -148,9 +148,9 @@ class GenericRecorder(Generic[Individual, Record], Recorder):
     >>> import numpy as np
     >>> from itertools import chain
     >>> from collections import namedtuple, Counter
-    >>> record = namedtuple('record', ['score', 'age', 'nchild'])
-    >>> start = lambda indiv, score: record(score, 0, 0)
-    >>> update = lambda indiv, rec, nchild: record(rec.score, rec.age+1, rec.nchild+nchild)
+    >>> record = namedtuple('record', ['score', 'age'])
+    >>> start = lambda indiv, score: record(score, 0)
+    >>> update = lambda indiv, rec: record(rec.score, rec.age+1)
     >>> individuals = list(np.random.randint(-1000, 1000, size=100))
     >>> scores = individuals
     >>> recorder = GenericRecorder(start, update)
@@ -158,34 +158,22 @@ class GenericRecorder(Generic[Individual, Record], Recorder):
     >>> records = recorder.start(individuals, scores)
     >>> all(rec.score == score for rec, score in zip(records, scores))
     True
-    >>> set((rec.age, rec.nchild) for rec in records) == {(0, 0)}
+    >>> set(rec.age for rec in records) == {0}
     True
     >>> # test record update
-    >>> mates = [[0, 1], [0, 2], [1, 3]]
-    >>> mate_counts = Counter(chain.from_iterable(mates))
-    >>> broodsize = 1
-    >>> updated1 = recorder.update(individuals, records, mates, broodsize)
+    >>> updated1 = recorder.update(individuals, records)
     >>> len(updated1) == len(records)
     True
     >>> all(old.score == new.score for old, new in zip(records, updated1))
     True
     >>> all(new.age == 1 for new in updated1)
     True
-    >>> all(updated1[key].nchild == (count * broodsize) for key, count in mate_counts.items())
-    True
-    >>> broodsize = 3
-    >>> updated2 = recorder.update(individuals, records, mates, broodsize)
-    >>> all(updated2[key].nchild == (count * broodsize) for key, count in mate_counts.items())
-    True
-    >>> all((new1.score, new1.age) == (new2.score, new2.age) for new1, new2 in zip(updated1, updated2))
-    True
     """
 
     def __init__(self,
                  start: Callable[[Individual, Ord], Record],
-                 update: Callable[[Individual, Record, int], Record]):
+                 update: Callable[[Individual, Record], Record]):
         """
-
         :param start: a function of two arguments: individual and fitness score
         :param update: a function of three arguments: individual, record and
         the number of new children
@@ -205,34 +193,26 @@ class GenericRecorder(Generic[Individual, Record], Recorder):
         :param kwargs:
         :return:
         """
-
         if not (individuals and len(individuals) == len(scores)):
             raise ValueError
+
         return list(starmap(self._start, zip(individuals, scores)))
 
     def update(self,
                individuals: List[Individual],
                records: List[Record],
-               mates: List[List[int]],
-               broodsize: int,
                **kwargs) -> List[Record]:
+        """
 
+        :param individuals:
+        :param records:
+        :param kwargs:
+        :return:
+        """
         if not (individuals and len(individuals) == len(records)):
             raise ValueError
-        if not (isinstance(broodsize, int) and broodsize > 0):
-            raise ValueError('broodsize must be a positive integer')
-        # multiply (i.e. repeat) mating groups by broodsize and count the number
-        # of children
-        nchildren = Counter(
-            chain.from_iterable(
-                group * broodsize for group in mates
-            )
-        )
-        # keys = range(len(individuals))  # TODO: should Recorder be verbose?
-        return [
-            self._update(indiv, record, nchildren[i])
-            for i, (indiv, record) in enumerate(zip(individuals, records))
-        ]
+
+        return list(starmap(self._update, zip(individuals, records)))
 
 
 class GenericSelector(Generic[Individual], MateSelector):
@@ -344,8 +324,8 @@ class GenericCrossover(Generic[Individual], Crossover):
     def __call__(self,
                  individuals: List[Individual],
                  records: List[Record],
-                 mates: Collection[Collection[KeyType]],
-                 **kwargs) -> List[Individual]:
+                 mates: Collection[Collection[KeyT]],
+                 **kwargs) -> List[List[Individual]]:
         """
         :param individuals:
         :param records:
@@ -357,7 +337,7 @@ class GenericCrossover(Generic[Individual], Crossover):
         >>>
         >>> def func(parents: List[Tuple[Tuple[int, int], None]]) -> List[Tuple[int, int]]:
         ...     (indiv1, rec1), (indiv2, rec2) = parents
-        ...     assert {rec1, rec2} == {None}
+        ...     assert rec1 is None and rec2 is None
         ...     child = (indiv1[0], indiv2[1])
         ...     return [child]
         ...
@@ -368,11 +348,15 @@ class GenericCrossover(Generic[Individual], Crossover):
         >>> mates = list(product([0, 1], [0, 1]))
         >>> crossover = GenericCrossover(func, nmates, broodsize)
         >>> children = crossover(individuals, records, mates)
-        >>> set(children) == set(mates)
+        >>> len(children) == len(mates)
+        True
+        >>> set(map(len, children)) == {1}
+        True
+        >>> set(chain.from_iterable(children)) == set(mates)
         True
         >>> def func(parents: List[Tuple[Tuple[int, int], None]]) -> List[Tuple[int, int]]:
         ...     (indiv1, rec1), (indiv2, rec2) = parents
-        ...     assert {rec1, rec2} == {None}
+        ...     assert rec1 is None and rec2 is None
         ...     return list(product(indiv1, indiv2))
         ...
         >>> crossover = GenericCrossover(func, nmates, broodsize)
@@ -399,7 +383,7 @@ class GenericCrossover(Generic[Individual], Crossover):
                 f'pair; the underlying function produced {list(broodsizes)} '
                 f'children instead'
             )
-        return list(chain.from_iterable(child_groups))
+        return child_groups
 
 
 class GenericMutator(Generic[Individual], Mutator):
