@@ -4,8 +4,8 @@ from functools import reduce
 from typing import Callable, Collection, Generic, List, NamedTuple, \
     Optional, Tuple, TypeVar, Iterable, Sized, Container
 
-KeyType = TypeVar('KeyType')
-ValType = TypeVar('ValType', covariant=True)
+KeyT = TypeVar('KeyT')
+ValT = TypeVar('ValT', covariant=True)
 Individual = TypeVar('Individual', covariant=True)
 Record = TypeVar('Record', covariant=True)
 
@@ -52,15 +52,15 @@ class Ord(metaclass=abc.ABCMeta):
         return compatible or NotImplemented
 
 
-class Index(Generic[KeyType, ValType], Sized, metaclass=abc.ABCMeta):
+class Index(Generic[KeyT, ValT], Sized, metaclass=abc.ABCMeta):
     """
-    An abstract base class representing a finite set of objects of type ValType
-    that can be accessed by an index/key of type KeyType. Examples include
+    An abstract base class representing a finite set of objects of type ValT
+    that can be accessed by an index/key of type KeyT. Examples include
     builtin arrays, lists, tuples and dicts.
     """
 
     @abc.abstractmethod
-    def __getitem__(self, item: KeyType) -> ValType:
+    def __getitem__(self, item: KeyT) -> ValT:
         pass
 
     @classmethod
@@ -100,8 +100,8 @@ class Estimator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __call__(self,
-                 individuals: Index[KeyType, Individual],
-                 **kwargs) -> Index[KeyType, Ord]:
+                 individuals: Index[KeyT, Individual],
+                 **kwargs) -> Index[KeyT, Ord]:
         pass
 
 
@@ -114,9 +114,9 @@ class Recorder(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def start(self,
-              individuals: Index[KeyType, Individual],
-              scores: Index[KeyType, Ord],
-              **kwargs) -> Index[KeyType, Record]:
+              individuals: Index[KeyT, Individual],
+              scores: Index[KeyT, Ord],
+              *args, **kwargs) -> Index[KeyT, Record]:
         """
         Start records
         :param individuals:
@@ -128,20 +128,16 @@ class Recorder(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def update(self,
-               individuals: Index[KeyType, Individual],
-               records: Index[KeyType, Record],
-               mates: Collection[Collection[KeyType]],
-               broodsize: int,
-               **kwargs) -> Index[KeyType, Record]:
+               individuals: Index[KeyT, Individual],
+               records: Index[KeyT, Record],
+               *args, **kwargs) -> Index[KeyT, Record]:
         """
         Update records
         :param individuals: all individuals at the start of a generation, i.e.
         all individuals that might've mated
         :param records: records associated with `individuals`
-        :param mates: mating groups
-        :param broodsize: the number of children per mating group
         :param kwargs:
-        :return:
+        :return: an index of updated records
         """
         pass
 
@@ -165,9 +161,9 @@ class MateSelector(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __call__(self,
                  npairs: int,
-                 individuals: Index[KeyType, Individual],
-                 records: Index[KeyType, Record],
-                 **kwargs) -> Collection[Collection[KeyType]]:
+                 individuals: Index[KeyT, Individual],
+                 records: Index[KeyT, Record],
+                 **kwargs) -> Collection[Collection[KeyT]]:
         pass
 
 
@@ -198,10 +194,20 @@ class Crossover(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __call__(self,
-                 individuals: Index[KeyType, Individual],
-                 records: Index[KeyType, Record],
-                 mates: Collection[Collection[KeyType]],
-                 **kwargs) -> Index[KeyType, Individual]:
+                 individuals: Index[KeyT, Individual],
+                 records: Index[KeyT, Record],
+                 mates: Index[KeyT, Collection[KeyT]],
+                 **kwargs) -> Index[KeyT, Collection[Individual]]:
+        """
+        Carry out crossover on mating groups
+        :param individuals:
+        :param records:
+        :param mates:
+        :param kwargs:
+        :return: an index of offspring collections aligned with mating groups,
+        i.e. offsprings[i] are produced by mates[i];
+        len(offspring[i]) == broodsize for any i in individuals
+        """
         pass
 
 
@@ -212,8 +218,8 @@ class Mutator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __call__(self,
-                 individuals: Index[KeyType, Individual],
-                 **kwargs) -> Index[KeyType, Individual]:
+                 individuals: Index[KeyT, Individual],
+                 **kwargs) -> Index[KeyT, Individual]:
         pass
 
 
@@ -225,16 +231,16 @@ class SelectionPolicy(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __call__(self,
                  size: int,
-                 individuals: Index[KeyType, Individual],
-                 records: Index[KeyType, Record],
-                 **kwargs) -> Collection[KeyType]:
+                 individuals: Index[KeyT, Individual],
+                 records: Index[KeyT, Record],
+                 **kwargs) -> Collection[KeyT]:
         pass
 
 
-Join = Callable[
-    [Index[KeyType, ValType], Index[KeyType, ValType]],
-    Index[KeyType, ValType]
-]
+# Join = Callable[
+#     [Index[KeyType, ValType], Index[KeyType, ValType]],
+#     Index[KeyType, ValType]
+# ]
 
 
 # Move all repetitive stuff to configurations
@@ -244,7 +250,7 @@ Operators = NamedTuple('Operators', [
     ('selector', MateSelector),
     ('crossover', Crossover),
     ('mutator', Mutator),
-    ('join', Join),
+    # ('join', Join),
     ('policy', SelectionPolicy),
 ])
 
@@ -257,10 +263,10 @@ class Callback(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __call__(
         self,
-        individuals: Index[KeyType, Individual],
-        records: Index[KeyType, Record],
+        individuals: Index[KeyT, Individual],
+        records: Index[KeyT, Record],
         operators: Operators
-    ) -> Tuple[Index[KeyType, Individual], Index[KeyType, Record], Operators]:
+    ) -> Tuple[Index[KeyT, Individual], Index[KeyT, Record], Operators]:
         pass
 
 
@@ -275,10 +281,10 @@ class BaseEvolver(metaclass=abc.ABCMeta):
         self,
         operators: Operators,
         gensize: int,  # the number of children per generation
-        individuals: Index[KeyType, Individual],
-        records: Optional[Index[KeyType, Record]] = None,
+        individuals: Index[KeyT, Individual],
+        records: Optional[Index[KeyT, Record]] = None,
         **kwargs
-    ) -> Tuple[Index[KeyType, Individual], Index[KeyType, Record]]:
+    ) -> Tuple[Index[KeyT, Individual], Index[KeyT, Record]]:
         pass
 
     def evolve(
@@ -286,11 +292,11 @@ class BaseEvolver(metaclass=abc.ABCMeta):
         generations: int,
         operators: Operators,
         gensize: int,
-        individuals: Index[KeyType, Individual],
-        records: Optional[Index[KeyType, Record]] = None,
+        individuals: Index[KeyT, Individual],
+        records: Optional[Index[KeyT, Record]] = None,
         callbacks: Optional[List[Callback]] = None,
         **kwargs
-    ) -> Tuple[Index[KeyType, Individual], Index[KeyType, Record]]:
+    ) -> Tuple[Index[KeyT, Individual], Index[KeyT, Record]]:
         if not (isinstance(generations, int) and generations > 0):
             raise ValueError('generations must be a positive integer')
         for _ in range(generations):
@@ -310,10 +316,10 @@ class BaseEvolver(metaclass=abc.ABCMeta):
     def call_callbacks(
         self,
         callbacks: List[Callback],
-        individuals: Index[KeyType, Individual],
-        records: Index[KeyType, Record],
+        individuals: Index[KeyT, Individual],
+        records: Index[KeyT, Record],
         operators: Operators
-    ) -> Tuple[Index[KeyType, Individual], Index[KeyType, Record], Operators]:
+    ) -> Tuple[Index[KeyT, Individual], Index[KeyT, Record], Operators]:
         return reduce(
             lambda arguments, callback: callback(*arguments),
             callbacks,
