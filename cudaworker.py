@@ -3,7 +3,6 @@ This is a temporary module intended for testing purposes; we will move it later
 to sklab-util
 """
 
-import base64
 import importlib.util
 import inspect
 import os
@@ -12,7 +11,6 @@ import subprocess as sp
 import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
 from functools import reduce
 from queue import Queue
 from types import ModuleType
@@ -57,7 +55,7 @@ class CudaSubprocessExecutor(Generic[Individual], Executor):
         n_devices = (F(map, len) >> sum)(devices)
         if n_devices > len(unique_devices):
             raise ValueError(
-                'At least one GPU ID is repeated across several device group'
+                'At least one GPU ID is repeated across multiple device groups'
             )
         # CPU device groups become empty strings
         self._devices = (F(map, ','.join) >> list)(devices)
