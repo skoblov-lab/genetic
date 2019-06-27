@@ -129,6 +129,7 @@ class GenericEvolver(BaseEvolver):
         # update initial records
         records_updated = recorder.update(individuals, records)
         # join individuals and records and select a new population
+        # todo move the join operation into a method
         joined_individuals = individuals + children
         joined_records = records_updated + child_records
         selected = policy(popsize, joined_individuals, joined_records)

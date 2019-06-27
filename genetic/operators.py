@@ -431,6 +431,9 @@ class GenericPolicy(Generic[Individual, Record], SelectionPolicy):
         return selected
 
 
+# TODO add decorators; consider inferring type compatibility
+
+
 def ktournament(k: int, key: Callable[[Record], Ord], n: int, individuals: List[Individual], records: List[Record],
                 reverse=False, replace=False) -> List[int]:
     """
