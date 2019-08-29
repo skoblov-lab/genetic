@@ -297,6 +297,7 @@ class BaseEvolver(metaclass=abc.ABCMeta):
         callbacks: Optional[List[Callback]] = None,
         **kwargs
     ) -> Tuple[Index[KeyT, Individual], Index[KeyT, Record]]:
+        # TODO return operators
         if not (isinstance(generations, int) and generations > 0):
             raise ValueError('generations must be a positive integer')
         for _ in range(generations):
